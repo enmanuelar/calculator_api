@@ -1,0 +1,19 @@
+{
+  "name": "auth_callback",
+  "version": "1.0.0",
+  "description": "lambda function to handle the cognito's app client callback",
+  "main": "app.js",
+  "author": "Enmanuel Almonte",
+  "license": "MIT",
+  "dependencies": {
+    "aws-jwt-verify": "^4.0.0",
+    "uuid": "^9.0.1"
+  },
+  "scripts": {
+    "test": "mocha tests/unit/"
+  },
+  "devDependencies": {
+    "chai": "^4.3.6",
+    "mocha": "^10.1.0"
+  }
+}

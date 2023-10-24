@@ -1,0 +1,165 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  calculator_api
+
+  Sample SAM Template for calculator_api
+  
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 3
+    Environment:
+      Variables:
+        USER_POOL_CLIENT_ID: 1g8fi1qnd8s95kd6f8geun9qmi
+        USER_POOL_ID: us-east-1_p0bQ7ycFn
+
+Parameters:
+  APIStageName:
+    Default: api
+    Description: StageName of API Gateway deployment
+    Type: String
+#  ApiVersion:
+#    Default: v1
+#    Description: The API Version
+#    Type: String
+Resources:
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: CalculatorUserPool
+      UsernameAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireSymbols: true
+          RequireUppercase: true
+      Schema:
+        - AttributeDataType: String
+          Name: email
+          Required: false
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPool
+      GenerateSecret: false
+      ClientName: CalculatorApp
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthScopes:
+        - email
+        - openid
+        - profile
+      SupportedIdentityProviders:
+        - COGNITO
+      CallbackURLs:
+        - !Sub "https://${AppApi}.execute-api.${AWS::Region}.amazonaws.com/${APIStageName}/auth/callback"
+      LogoutURLs:
+        - http://localhost:5173
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      UserPoolId: !Ref UserPool
+      Domain:
+        enmanuel-calculator-app
+  AppApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: CalculatorAPI
+      StageName: !Ref APIStageName
+      Cors: "'*'"
+      Auth:
+        Authorizers:
+          MyAuthAuthorizer:
+            FunctionArn: !GetAtt AuthAuthorizer.Arn
+            FunctionInvokeRole: !GetAtt AuthAuthorizerRole.Arn
+            FunctionPayloadType: REQUEST
+            Identity:
+              Headers:
+                - Cookie
+        InvokeRole: NONE
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: hello-world/
+      Handler: app.lambdaHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - arm64
+      Events:
+        HelloWorld:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /
+            Method: get
+            RestApiId: !Ref AppApi
+            Auth:
+              Authorizer: MyAuthAuthorizer
+  HelloWorldWithoutAuth:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: hello-world/
+      Handler: app.noAuthHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - arm64
+      Events:
+        HelloWorldNoAuth:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /noauth
+            Method: get
+            RestApiId: !Ref AppApi
+  AuthCallback:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: auth-callback/
+      Handler: app.lambdaHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - arm64
+      Events:
+        AuthCallback:
+          Type: Api
+          Properties:
+            Path: /auth/callback
+            Method: GET
+            RestApiId: !Ref AppApi
+  AuthAuthorizer:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: auth-authorizer/
+      Handler: app.lambdaHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - arm64
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  HelloWorldApi:
+    Description: "API Gateway endpoint URL for Hello World function"
+    Value: !Sub "https://${AppApi}.execute-api.${AWS::Region}.amazonaws.com/${APIStageName}/hello/"
+  HelloWorldFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt HelloWorldFunction.Arn
+  HelloWorldFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt HelloWorldFunctionRole.Arn
+  AuthCallbackApi:
+    Description: "API Gateway endpoint URL for AuthCallback function"
+    Value: !Sub "https://${AppApi}.execute-api.${AWS::Region}.amazonaws.com/${APIStageName}/auth/callback"
+  UserPoolId:
+    Description: "ID of the Cognito User Pool"
+    Value: !Ref UserPool
+  CognitoClientId:
+    Description: "ID of the Cognito User Pool Client"
+    Value: !Ref UserPoolClient
+  UserPoolDomain:
+    Description: "User pool domain"
+    Value: !Ref UserPoolDomain
