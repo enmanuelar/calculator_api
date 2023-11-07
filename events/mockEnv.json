@@ -1,0 +1,13 @@
+{
+  "CalculateFunction": {
+    "AUDIENCE": "calculator-api",
+    "TOKEN_ISSUER": "https://dev-sgrkcg6vdqaqjg2a.us.auth0.com/",
+    "JWKS_URI": "https://dev-sgrkcg6vdqaqjg2a.us.auth0.com/.well-known/jwks.json",
+    "DB_HOST": "calculator-db.clu42wo2sfkt.us-east-1.rds.amazonaws.com",
+    "DB_USER": "ealmonterozon",
+    "DB_PASSWORD": "7aFDyRy0ej$rH68p",
+    "DB_SCHEMA": "calculatordb",
+    "STRING_GENERATOR_API_KEY": "cd707670-fffc-41fa-a07f-3643a848dfe8",
+    "STRING_GENERATOR_URL": "https://api.random.org/json-rpc/4/invoke"
+  }
+}

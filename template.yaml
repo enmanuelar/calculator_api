@@ -8,7 +8,7 @@ Description: >
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 6
 Parameters:
   APIStageName:
     Default: api
@@ -34,6 +34,12 @@ Parameters:
     Type: String
   DBSchema:
     Description: Database Schema
+    Type: String
+  StringGeneratorApiKey:
+    Description: Random.org API Key
+    Type: String
+  StringGeneratorUrl:
+    Description: Random.org API URL
     Type: String
 Resources:
   AppApi:
@@ -74,8 +80,39 @@ Resources:
         Operations:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /
+            Path: /operations
             Method: get
+            RestApiId: !Ref AppApi
+            Auth:
+              Authorizer: MyAuthAuthorizer
+  CalculateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: calculate/
+      Handler: app.lambdaHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - arm64
+      Environment:
+        Variables:
+          DB_HOST: !Ref DBHost
+          DB_USER: !Ref DBUser
+          DB_PASSWORD: !Ref DBPassword
+          DB_SCHEMA: !Ref DBSchema
+          TOKEN_ISSUER: !Ref TokenIssuer
+          STRING_GENERATOR_API_KEY: !Ref StringGeneratorApiKey
+          STRING_GENERATOR_URL: !Ref StringGeneratorUrl
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-0cae655977afe517b
+        SubnetIds:
+          - subnet-0bdd5ab4ac70cf08d
+      Events:
+        Operations:
+          Type: Api
+          Properties:
+            Path: /calculate
+            Method: post
             RestApiId: !Ref AppApi
             Auth:
               Authorizer: MyAuthAuthorizer
@@ -105,3 +142,12 @@ Outputs:
   OperationsFunctionIamRole:
     Description: "Implicit IAM Role created for Operations function"
     Value: !GetAtt OperationsFunctionRole.Arn
+  CalculateApi:
+    Description: "API Gateway endpoint URL for Calculate function"
+    Value: !Sub "https://${AppApi}.execute-api.${AWS::Region}.amazonaws.com/${APIStageName}/calculate/"
+  CalculateFunction:
+    Description: "Calculate Lambda Function ARN"
+    Value: !GetAtt CalculateFunction.Arn
+  CalculateFunctionIamRole:
+    Description: "Implicit IAM Role created for Calculate function"
+    Value: !GetAtt CalculateFunctionRole.Arn
