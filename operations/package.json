@@ -1,0 +1,19 @@
+{
+  "name": "operations",
+  "version": "1.0.0",
+  "description": "Function to handle operations requests",
+  "main": "app.js",
+  "repository": "https://github.com/awslabs/aws-sam-cli/tree/develop/samcli/local/init/templates/cookiecutter-aws-sam-hello-nodejs",
+  "author": "Enmanuel Almonte",
+  "license": "MIT",
+  "dependencies": {
+    "mysql": "^2.18.1"
+  },
+  "scripts": {
+    "test": "mocha tests/unit/"
+  },
+  "devDependencies": {
+    "chai": "^4.3.6",
+    "mocha": "^10.1.0"
+  }
+}

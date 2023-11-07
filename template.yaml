@@ -9,15 +9,31 @@ Description: >
 Globals:
   Function:
     Timeout: 3
-    Environment:
-      Variables:
-        AUDIENCE: calculator-api
-        TOKEN_ISSUER: https://dev-sgrkcg6vdqaqjg2a.us.auth0.com/
-        JWKS_URI: https://dev-sgrkcg6vdqaqjg2a.us.auth0.com/.well-known/jwks.json
 Parameters:
   APIStageName:
     Default: api
     Description: StageName of API Gateway deployment
+    Type: String
+  Audience:
+    Description: Auth0 Audience
+    Type: String
+  TokenIssuer:
+    Description: Auth0 Token Issuer
+    Type: String
+  JWKSUri:
+    Description: Auth0 JWKS uri
+    Type: String
+  DBHost:
+    Description: Database Host
+    Type: String
+  DBUser:
+    Description: Database User
+    Type: String
+  DBPassword:
+    Description: Database Password
+    Type: String
+  DBSchema:
+    Description: Database Schema
     Type: String
 Resources:
   AppApi:
@@ -35,21 +51,27 @@ Resources:
             FunctionInvokeRole: !GetAtt AuthAuthorizerRole.Arn
             FunctionPayloadType: TOKEN
         InvokeRole: NONE
-  HelloWorldFunction:
+  OperationsFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: hello-world/
+      CodeUri: operations/
       Handler: app.lambdaHandler
       Runtime: nodejs18.x
       Architectures:
         - arm64
+      Environment:
+        Variables:
+          DB_HOST: !Ref DBHost
+          DB_USER: !Ref DBUser
+          DB_PASSWORD: !Ref DBPassword
+          DB_SCHEMA: !Ref DBSchema
       VpcConfig:
         SecurityGroupIds:
           - sg-0cae655977afe517b
         SubnetIds:
           - subnet-0bdd5ab4ac70cf08d
       Events:
-        HelloWorld:
+        Operations:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /
@@ -63,18 +85,23 @@ Resources:
       CodeUri: auth-authorizer/
       Handler: app.lambdaHandler
       Runtime: nodejs18.x
+      Environment:
+        Variables:
+          AUDIENCE: !Ref Audience
+          TOKEN_ISSUER: !Ref TokenIssuer
+          JWKS_URI: !Ref JWKSUri
       Architectures:
         - arm64
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
-    Description: "API Gateway endpoint URL for Hello World function"
-    Value: !Sub "https://${AppApi}.execute-api.${AWS::Region}.amazonaws.com/${APIStageName}/hello/"
-  HelloWorldFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+  OperationsApi:
+    Description: "API Gateway endpoint URL for Operations function"
+    Value: !Sub "https://${AppApi}.execute-api.${AWS::Region}.amazonaws.com/${APIStageName}/operations/"
+  OperationsFunction:
+    Description: "Operations Lambda Function ARN"
+    Value: !GetAtt OperationsFunction.Arn
+  OperationsFunctionIamRole:
+    Description: "Implicit IAM Role created for Operations function"
+    Value: !GetAtt OperationsFunctionRole.Arn
