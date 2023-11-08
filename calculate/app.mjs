@@ -28,7 +28,7 @@ const getOperationById = (operationId) => {
 const getUserBalance = (userId) => {
   return new Promise((resolve, reject) => {
     connection.query(
-      `SELECT user_balance FROM records WHERE user_id="${userId}" ORDER BY "date" DESC LIMIT 1`,
+      `SELECT user_balance FROM records WHERE user_id="${userId}" ORDER BY date DESC LIMIT 1`,
       (err, result, values) => {
         if (!err) {
           resolve(result);
@@ -111,11 +111,12 @@ function formatDateToMySQLDateTime(date) {
 
 export const lambdaHandler = async (event, context) => {
   try {
-    const { operationId, firstValue, secondValue, headers } = event;
+    const { operationId, firstValue, secondValue } = JSON.parse(event.body);
     //Get userInfo from Auth0 from authorization header
     const userInfo = await axios.get(`${process.env.TOKEN_ISSUER}userinfo`, {
       headers: {
-        Authorization: headers.authorization,
+        Authorization:
+          event.headers?.Authorization || event.headers.authorization,
         Accept: "application/json",
       },
     });
