@@ -4,7 +4,7 @@ Description: >
   calculator_api
 
   Sample SAM Template for calculator_api
-  
+
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
@@ -85,6 +85,33 @@ Resources:
             RestApiId: !Ref AppApi
             Auth:
               Authorizer: MyAuthAuthorizer
+  DBProxyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: db-proxy/
+      Handler: app.lambdaHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - arm64
+      Environment:
+        Variables:
+          DB_HOST: !Ref DBHost
+          DB_USER: !Ref DBUser
+          DB_PASSWORD: !Ref DBPassword
+          DB_SCHEMA: !Ref DBSchema
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-0cae655977afe517b
+        SubnetIds:
+          - subnet-0bdd5ab4ac70cf08d
+#      Policies:
+#        - Version: '20120-10-17'
+#          Statement:
+#            - Effect: Allow
+#              Action:
+#                - rds-db:connect
+#              Resource:
+#                - !Sub arn:aws:iam::900468521202:role/service-role/rds-proxy-role-1699489345989
   CalculateFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -102,17 +129,32 @@ Resources:
           TOKEN_ISSUER: !Ref TokenIssuer
           STRING_GENERATOR_API_KEY: !Ref StringGeneratorApiKey
           STRING_GENERATOR_URL: !Ref StringGeneratorUrl
-      VpcConfig:
-        SecurityGroupIds:
-          - sg-0cae655977afe517b
-        SubnetIds:
-          - subnet-0bdd5ab4ac70cf08d
       Events:
-        Operations:
+        Calculate:
           Type: Api
           Properties:
             Path: /calculate
             Method: post
+            RestApiId: !Ref AppApi
+            Auth:
+              Authorizer: MyAuthAuthorizer
+  RecordsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: records/
+      Handler: app.lambdaHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - arm64
+      Environment:
+        Variables:
+          TOKEN_ISSUER: !Ref TokenIssuer
+      Events:
+        Records:
+          Type: Api
+          Properties:
+            Path: /records
+            Method: get
             RestApiId: !Ref AppApi
             Auth:
               Authorizer: MyAuthAuthorizer
@@ -151,3 +193,18 @@ Outputs:
   CalculateFunctionIamRole:
     Description: "Implicit IAM Role created for Calculate function"
     Value: !GetAtt CalculateFunctionRole.Arn
+  DBProxyFunction:
+    Description: "DBProxy Lambda Function ARN"
+    Value: !GetAtt DBProxyFunction.Arn
+  DBProxyFunctionIamRole:
+    Description: "Implicit IAM Role created for DBProxy function"
+    Value: !GetAtt DBProxyFunctionRole.Arn
+  RecordsApi:
+    Description: "API Gateway endpoint URL for Records function"
+    Value: !Sub "https://${AppApi}.execute-api.${AWS::Region}.amazonaws.com/${APIStageName}/records/"
+  RecordsFunction:
+    Description: "Records Lambda Function ARN"
+    Value: !GetAtt RecordsFunction.Arn
+  RecordsFunctionIamRole:
+    Description: "Implicit IAM Role created for Records function"
+    Value: !GetAtt RecordsFunctionRole.Arn

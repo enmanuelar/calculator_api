@@ -7,9 +7,7 @@
   "author": "Enmanuel Almonte",
   "license": "MIT",
   "dependencies": {
-    "aws-sdk": "^2.1491.0",
-    "axios": "^1.6.0",
-    "uuid": "^9.0.1"
+    "mysql": "^2.18.1"
   },
   "scripts": {
     "test": "mocha tests/unit/"

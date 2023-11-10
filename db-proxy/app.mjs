@@ -6,10 +6,11 @@ const connection = mysql.createConnection({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_SCHEMA,
 });
+
 export const lambdaHandler = async (event, context) => {
   try {
     const promise = new Promise((resolve, reject) => {
-      connection.query("SELECT * FROM operations", (err, result, values) => {
+      connection.query(event.query, (err, result, values) => {
         if (!err) {
           connection.end();
           resolve(result);
@@ -28,17 +29,9 @@ export const lambdaHandler = async (event, context) => {
       body: JSON.stringify({
         data: await promise,
       }),
-      isBase64Encoded: false,
     };
   } catch (err) {
-    console.error(err);
-    return {
-      statusCode: 500,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-      },
-      body: "Operations call failed",
-      isBase64Encoded: false,
-    };
+    console.log(err);
+    return err;
   }
 };
