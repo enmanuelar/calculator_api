@@ -1,4 +1,5 @@
 import {
+  deleteRecordById,
   getRecordsByUserId,
   getTotalRecordsCountByUserId,
   getUserIdFromAuth0,
@@ -27,6 +28,45 @@ export const lambdaHandler = async (event, context) => {
         data: {
           count,
           records,
+        },
+      }),
+      isBase64Encoded: false,
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      statusCode: 500,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
+      body: JSON.stringify({
+        message: err.message,
+      }),
+      isBase64Encoded: false,
+    };
+  }
+};
+
+export const deleteRecordsHandler = async (event, context) => {
+  try {
+    console.log("Initiating Delete Records function");
+    const { recordId } = event.pathParameters;
+    console.log("Received recordId:", recordId);
+    const authorizationToken =
+      event.headers?.Authorization || event.headers?.authorization;
+    const userId = await getUserIdFromAuth0(authorizationToken);
+    console.log("Retrieved userId", userId);
+    const result = await deleteRecordById(userId, recordId);
+    console.log(`Deleted record with id ${recordId}`, result);
+
+    return {
+      statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
+      body: JSON.stringify({
+        data: {
+          message: "Success",
         },
       }),
       isBase64Encoded: false,

@@ -1,0 +1,37 @@
+{
+  "body": "{\"message\": \"hello world\"}",
+  "resource": "/{proxy+}",
+  "path": "/records/{recordId}",
+  "httpMethod": "POST",
+  "isBase64Encoded": false,
+  "pathParameters": {
+    "recordId": "fa1b9de6-d9dd-4a90-8bcd-0167cfd753c5"
+  },
+  "headers": {
+    "Authorization": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImlmMG9JQ1FvcWQ3N0Rwbi12ekh5NiJ9.eyJpc3MiOiJodHRwczovL2Rldi1zZ3JrY2c2dmRxYXFqZzJhLnVzLmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw2NTNmZmZmY2VlNGJmNGE4OTYxMGQ0MWQiLCJhdWQiOlsiY2FsY3VsYXRvci1hcGkiLCJodHRwczovL2Rldi1zZ3JrY2c2dmRxYXFqZzJhLnVzLmF1dGgwLmNvbS91c2VyaW5mbyJdLCJpYXQiOjE2OTk2NDkzODUsImV4cCI6MTY5OTczNTc4NSwiYXpwIjoidFRvcEd6TkVxaDRCV29aRVlyQVg2NlBXN2R3V002dlgiLCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIn0.U0LUAmvd5p5y_m7TZpHKg6Rpolld7djTdTBzdQlSz4WYz_I6x0i0XYRsKoShiKa1Wo8mRcXF8bxgtxNbx2dKgpRJOGsxPSt-lh8FWmoLorfFRBz6gVwd-cSldEjG8X-_HVtuaYfYG-mWm6B4zqhEcOrrHVdKYWsIRQnwI2tPCmV9H__Dgi9vj4DQIY8Hm3Mj0A_zoQkEpZ17vCR0wZvYcwBUH8evQqYtcVpKj3KYkLpP6R7sDcn1nFNrzWSh0euo5ONY-bpkKrAPs8v5-5dxx9r7-7vnm66B_vUD6t0mk6dXrllb488TLsDa2ayqZiRUnIPMRMQM_6xetxLvoKYtHA"
+  },
+  "requestContext": {
+    "accountId": "123456789012",
+    "resourceId": "123456",
+    "stage": "prod",
+    "requestId": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
+    "requestTime": "09/Apr/2015:12:34:56 +0000",
+    "requestTimeEpoch": 1428582896000,
+    "identity": {
+      "cognitoIdentityPoolId": null,
+      "accountId": null,
+      "cognitoIdentityId": null,
+      "caller": null,
+      "accessKey": null,
+      "sourceIp": "127.0.0.1",
+      "cognitoAuthenticationType": null,
+      "cognitoAuthenticationProvider": null,
+      "userArn": null,
+      "userAgent": "Custom User Agent String",
+      "user": null
+    },
+    "path": "/records/{recordId}",
+    "resourcePath": "/{proxy+}",
+    "httpMethod": "DELETE"
+  }
+}

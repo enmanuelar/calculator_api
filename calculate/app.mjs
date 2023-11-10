@@ -27,7 +27,7 @@ const getOperationById = async (operationId) => {
 };
 
 const getUserBalance = async (userId) => {
-  const query = `SELECT user_balance FROM records WHERE user_id="${userId}" ORDER BY date DESC LIMIT 1`;
+  const query = `SELECT user_balance FROM records WHERE user_id="${userId}" AND deleted_at IS NULL ORDER BY date DESC LIMIT 1`;
   const response = await invokeDB(query);
   return JSON.parse(response.body).data;
 };
@@ -54,17 +54,20 @@ const insertNewUserInitialRecord = async (userId, initialCredits) => {
 };
 
 const performOperation = async (firstValue, secondValue, operationType) => {
+  function formatResult(compute) {
+    return compute().toFixed(2).toString();
+  }
   switch (operationType) {
     case "addition":
-      return firstValue + secondValue;
+      return formatResult(() => firstValue + secondValue);
     case "substraction":
-      return firstValue - secondValue;
+      return formatResult(() => firstValue - secondValue);
     case "multiplication":
-      return firstValue * secondValue;
+      return formatResult(() => firstValue * secondValue);
     case "division":
-      return firstValue / secondValue;
+      return formatResult(() => firstValue / secondValue);
     case "square_root":
-      return Math.sqrt(firstValue);
+      return formatResult(() => Math.sqrt(firstValue));
     case "random_string":
       try {
         const stringGeneratorReq = {

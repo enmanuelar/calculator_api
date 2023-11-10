@@ -21,7 +21,7 @@ stack_name = "calculator-api"
 s3_prefix = "calculator-api"
 region = "us-east-1"
 profile = "ear"
-parameter_overrides = "APIStageName=\"api\""
+parameter_overrides = "APIStageName=\"api\" Audience=\"calculator-api\" TokenIssuer=\"https://dev-sgrkcg6vdqaqjg2a.us.auth0.com/\" JWKSUri=\"https://dev-sgrkcg6vdqaqjg2a.us.auth0.com/.well-known/jwks.json\" DBHost=\"calculator-db-proxy.proxy-clu42wo2sfkt.us-east-1.rds.amazonaws.com\" DBUser=\"ealmonterozon\" DBPassword=\"7aFDyRy0ej$rH68p\" DBSchema=\"calculatordb\" StringGeneratorApiKey=\"cd707670-fffc-41fa-a07f-3643a848dfe8\" StringGeneratorUrl=\"https://api.random.org/json-rpc/4/invoke\""
 image_repositories = []
 
 [default.package.parameters]

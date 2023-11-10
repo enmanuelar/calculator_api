@@ -158,6 +158,26 @@ Resources:
             RestApiId: !Ref AppApi
             Auth:
               Authorizer: MyAuthAuthorizer
+  DeleteRecordFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: records/
+      Handler: app.deleteRecordsHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - arm64
+      Environment:
+        Variables:
+          TOKEN_ISSUER: !Ref TokenIssuer
+      Events:
+        Records:
+          Type: Api
+          Properties:
+            Path: /records/{recordId}
+            Method: delete
+            RestApiId: !Ref AppApi
+            Auth:
+              Authorizer: MyAuthAuthorizer
   AuthAuthorizer:
     Type: AWS::Serverless::Function
     Properties:
