@@ -30,9 +30,15 @@ export async function invokeDB(query) {
   return JSON.parse(egressResponse.Payload.toString());
 }
 
-export const getRecordsByUserId = async (userId, page = 0, limit = 10) => {
+export const getRecordsByUserId = async (
+  userId,
+  page = 0,
+  limit = 10,
+  orderBy = "date",
+  direction = "asc",
+) => {
   const offset = Number(page) * Number(limit);
-  const query = `SELECT r.id as id, user_id as userId, user_balance as balance, operation_result as result, date, amount as cost, type as operationType  FROM records r JOIN operations o on o.id = r.operation_id WHERE user_id="${userId}" AND deleted_at IS NULL LIMIT ${limit} OFFSET ${offset}`;
+  const query = `SELECT r.id as id, user_id as userId, user_balance as balance, operation_result as result, date, amount as cost, type as operationType  FROM records r JOIN operations o on o.id = r.operation_id WHERE user_id="${userId}" AND deleted_at IS NULL ORDER BY ${orderBy} ${direction} LIMIT ${limit} OFFSET ${offset}`;
   const response = await invokeDB(query);
   return JSON.parse(response.body).data;
 };

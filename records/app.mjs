@@ -8,13 +8,21 @@ import {
 export const lambdaHandler = async (event, context) => {
   try {
     console.log("Initiating Records function");
-    const { page, limit } = event.queryStringParameters;
+    const { page, limit, orderBy, direction } = event.queryStringParameters;
     const authorizationToken =
       event.headers?.Authorization || event.headers?.authorization;
     const userId = await getUserIdFromAuth0(authorizationToken);
     console.log("Retrieved userId", userId);
-    const records = await getRecordsByUserId(userId, page, limit);
-    console.log(`Retrieved records for page ${page} and limit ${limit}`);
+    const records = await getRecordsByUserId(
+      userId,
+      page,
+      limit,
+      orderBy,
+      direction,
+    );
+    console.log(
+      `Retrieved records for page ${page}, limit ${limit}, order ${orderBy}, direction ${direction}`,
+    );
 
     const count = await getTotalRecordsCountByUserId(userId);
     console.log("Retrieved total records count", count);
