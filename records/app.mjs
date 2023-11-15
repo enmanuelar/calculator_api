@@ -3,6 +3,7 @@ import {
   deleteRecordById,
   formatDateToMySQLDateTime,
   getOperationById,
+  getOperations,
   getRecordsByUserId,
   getTotalRecordsCountByUserId,
   getUserBalance,
@@ -67,9 +68,6 @@ export const createRecordsHandler = async (event, context) => {
       event.headers?.Authorization || event.headers?.authorization;
     const userId = await getUserIdFromAuth0(authorizationToken);
     console.log("UserId", userId);
-
-    const insertedInitialRecord = await insertNewUserInitialRecord(userId, 300);
-    console.log("insertedUser", insertedInitialRecord);
     const operation = await getOperationById(operationId);
     console.log("Retrieved operation: ", operation);
     //Get user balance
@@ -137,6 +135,31 @@ export const deleteRecordsHandler = async (event, context) => {
       },
       200,
     );
+  } catch (err) {
+    console.error(err);
+    return response(
+      {
+        message: err.message,
+      },
+      500,
+    );
+  }
+};
+
+export const getLastRecordHandler = async (event, context) => {
+  try {
+    const authorizationToken =
+      event.headers?.Authorization || event.headers?.authorization;
+    const userId = await getUserIdFromAuth0(authorizationToken);
+    console.log("Retrieved userId", userId);
+    //Inserts an initial user record if it doesn't exist in the db
+    const insertedInitialRecord = await insertNewUserInitialRecord(userId, 300);
+    console.log("insertedUser", insertedInitialRecord);
+    const operations = await getOperations();
+    console.log("Retrieved operations", operations);
+    const userBalance = await getUserBalance(userId);
+    console.log("Retrieved userBalance", userBalance);
+    return response({ operations, userBalance }, 200);
   } catch (err) {
     console.error(err);
     return response(

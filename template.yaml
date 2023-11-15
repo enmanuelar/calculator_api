@@ -58,7 +58,7 @@ Resources:
             FunctionPayloadType: TOKEN
         InvokeRole: NONE
   OperationsFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: operations/
       Handler: app.lambdaHandler
@@ -71,6 +71,7 @@ Resources:
           DB_USER: !Ref DBUser
           DB_PASSWORD: !Ref DBPassword
           DB_SCHEMA: !Ref DBSchema
+          TOKEN_ISSUER: !Ref TokenIssuer
       VpcConfig:
         SecurityGroupIds:
           - sg-0cae655977afe517b
@@ -78,9 +79,9 @@ Resources:
           - subnet-0bdd5ab4ac70cf08d
       Events:
         Operations:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Type: Api
           Properties:
-            Path: /operations
+            Path: /v1/operations
             Method: get
             RestApiId: !Ref AppApi
             Auth:
@@ -104,14 +105,6 @@ Resources:
           - sg-0cae655977afe517b
         SubnetIds:
           - subnet-0bdd5ab4ac70cf08d
-#      Policies:
-#        - Version: '20120-10-17'
-#          Statement:
-#            - Effect: Allow
-#              Action:
-#                - rds-db:connect
-#              Resource:
-#                - !Sub arn:aws:iam::900468521202:role/service-role/rds-proxy-role-1699489345989
   CreateRecordsFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -122,10 +115,6 @@ Resources:
         - arm64
       Environment:
         Variables:
-          DB_HOST: !Ref DBHost
-          DB_USER: !Ref DBUser
-          DB_PASSWORD: !Ref DBPassword
-          DB_SCHEMA: !Ref DBSchema
           TOKEN_ISSUER: !Ref TokenIssuer
           STRING_GENERATOR_API_KEY: !Ref StringGeneratorApiKey
           STRING_GENERATOR_URL: !Ref StringGeneratorUrl
@@ -133,7 +122,7 @@ Resources:
         CreateRecords:
           Type: Api
           Properties:
-            Path: /records
+            Path: /v1/records
             Method: post
             RestApiId: !Ref AppApi
             Auth:
@@ -150,15 +139,15 @@ Resources:
         Variables:
           TOKEN_ISSUER: !Ref TokenIssuer
       Events:
-        Records:
+        GetRecords:
           Type: Api
           Properties:
-            Path: /records
+            Path: /v1/records
             Method: get
             RestApiId: !Ref AppApi
             Auth:
               Authorizer: MyAuthAuthorizer
-  DeleteRecordFunction:
+  DeleteRecordsFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: records/
@@ -170,11 +159,31 @@ Resources:
         Variables:
           TOKEN_ISSUER: !Ref TokenIssuer
       Events:
-        Records:
+        DeleteRecord:
           Type: Api
           Properties:
-            Path: /records/{recordId}
+            Path: /v1/records/{recordId}
             Method: delete
+            RestApiId: !Ref AppApi
+            Auth:
+              Authorizer: MyAuthAuthorizer
+  GetLastRecordFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: records/
+      Handler: app.getLastRecordHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - arm64
+      Environment:
+        Variables:
+          TOKEN_ISSUER: !Ref TokenIssuer
+      Events:
+        DeleteRecord:
+          Type: Api
+          Properties:
+            Path: /v1/records/last
+            Method: get
             RestApiId: !Ref AppApi
             Auth:
               Authorizer: MyAuthAuthorizer
@@ -192,9 +201,6 @@ Resources:
       Architectures:
         - arm64
 Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   OperationsApi:
     Description: "API Gateway endpoint URL for Operations function"
     Value: !Sub "https://${AppApi}.execute-api.${AWS::Region}.amazonaws.com/${APIStageName}/operations/"
@@ -228,3 +234,15 @@ Outputs:
   GetRecordsFunctionIamRole:
     Description: "Implicit IAM Role created for Records function"
     Value: !GetAtt GetRecordsFunctionRole.Arn
+  DeleteRecordsFunction:
+    Description: "DeleteRecord Lambda Function ARN"
+    Value: !GetAtt DeleteRecordsFunction.Arn
+  DeleteRecordsFunctionIamRole:
+    Description: "Implicit IAM Role created for DeleteRecord function"
+    Value: !GetAtt DeleteRecordsFunctionRole.Arn
+  GetLastRecordFunction:
+    Description: "GetLastRecord Lambda Function ARN"
+    Value: !GetAtt GetLastRecordFunction.Arn
+  GetLastRecordFunctionIamRole:
+    Description: "Implicit IAM Role created for GetLastRecord function"
+    Value: !GetAtt GetLastRecordFunctionRole.Arn

@@ -82,6 +82,12 @@ export const insertRecord = async (record) => {
   return JSON.parse(response.body).data;
 };
 
+export const getOperations = async () => {
+  const query = "SELECT * FROM operations";
+  const response = await invokeDB(query);
+  return JSON.parse(response.body).data;
+};
+
 export const insertNewUserInitialRecord = async (userId, initialCredits) => {
   const query = `INSERT INTO records (id, user_id, user_balance, date) SELECT UUID(), "${userId}", ${initialCredits}, CURTIME() FROM dual WHERE NOT EXISTS (SELECT id FROM records WHERE user_id="${userId}")`;
   const response = await invokeDB(query);
