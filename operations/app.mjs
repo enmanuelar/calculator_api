@@ -11,7 +11,6 @@ export const lambdaHandler = async (event, context) => {
     const promise = new Promise((resolve, reject) => {
       connection.query("SELECT * FROM operations", (err, result, values) => {
         if (!err) {
-          connection.end();
           resolve(result);
         } else {
           console.log("Error executing query: " + err.message);

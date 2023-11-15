@@ -112,11 +112,11 @@ Resources:
 #                - rds-db:connect
 #              Resource:
 #                - !Sub arn:aws:iam::900468521202:role/service-role/rds-proxy-role-1699489345989
-  CalculateFunction:
+  CreateRecordsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: calculate/
-      Handler: app.lambdaHandler
+      CodeUri: records/
+      Handler: app.createRecordsHandler
       Runtime: nodejs18.x
       Architectures:
         - arm64
@@ -130,19 +130,19 @@ Resources:
           STRING_GENERATOR_API_KEY: !Ref StringGeneratorApiKey
           STRING_GENERATOR_URL: !Ref StringGeneratorUrl
       Events:
-        Calculate:
+        CreateRecords:
           Type: Api
           Properties:
-            Path: /calculate
+            Path: /records
             Method: post
             RestApiId: !Ref AppApi
             Auth:
               Authorizer: MyAuthAuthorizer
-  RecordsFunction:
+  GetRecordsFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: records/
-      Handler: app.lambdaHandler
+      Handler: app.getRecordsHandler
       Runtime: nodejs18.x
       Architectures:
         - arm64
@@ -204,15 +204,15 @@ Outputs:
   OperationsFunctionIamRole:
     Description: "Implicit IAM Role created for Operations function"
     Value: !GetAtt OperationsFunctionRole.Arn
-  CalculateApi:
-    Description: "API Gateway endpoint URL for Calculate function"
-    Value: !Sub "https://${AppApi}.execute-api.${AWS::Region}.amazonaws.com/${APIStageName}/calculate/"
-  CalculateFunction:
-    Description: "Calculate Lambda Function ARN"
-    Value: !GetAtt CalculateFunction.Arn
-  CalculateFunctionIamRole:
-    Description: "Implicit IAM Role created for Calculate function"
-    Value: !GetAtt CalculateFunctionRole.Arn
+  CreateRecordsApi:
+    Description: "API Gateway endpoint URL for CreateRecords function"
+    Value: !Sub "https://${AppApi}.execute-api.${AWS::Region}.amazonaws.com/${APIStageName}/records/"
+  CreateRecordsFunction:
+    Description: "CreateRecords Lambda Function ARN"
+    Value: !GetAtt CreateRecordsFunction.Arn
+  CreateRecordsFunctionIamRole:
+    Description: "Implicit IAM Role created for CreateRecords function"
+    Value: !GetAtt CreateRecordsFunctionRole.Arn
   DBProxyFunction:
     Description: "DBProxy Lambda Function ARN"
     Value: !GetAtt DBProxyFunction.Arn
@@ -222,9 +222,9 @@ Outputs:
   RecordsApi:
     Description: "API Gateway endpoint URL for Records function"
     Value: !Sub "https://${AppApi}.execute-api.${AWS::Region}.amazonaws.com/${APIStageName}/records/"
-  RecordsFunction:
+  GetRecordsFunction:
     Description: "Records Lambda Function ARN"
-    Value: !GetAtt RecordsFunction.Arn
-  RecordsFunctionIamRole:
+    Value: !GetAtt GetRecordsFunction.Arn
+  GetRecordsFunctionIamRole:
     Description: "Implicit IAM Role created for Records function"
-    Value: !GetAtt RecordsFunctionRole.Arn
+    Value: !GetAtt GetRecordsFunctionRole.Arn

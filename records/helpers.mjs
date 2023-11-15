@@ -17,7 +17,7 @@ export async function getUserIdFromAuth0(authorizationToken) {
 export async function invokeDB(query) {
   const params = {
     FunctionName:
-      "arn:aws:lambda:us-east-1:900468521202:function:calculator-api-DBProxyFunction-B1U3tSy9QBTi",
+      "arn:aws:lambda:us-east-1:900468521202:function:calculator-api-DBProxyFunction-VoE1HHhHs87C",
     InvocationType: "RequestResponse",
     Payload: JSON.stringify({
       query,
@@ -54,3 +54,86 @@ export const deleteRecordById = async (userId, recordId) => {
   const response = await invokeDB(query);
   return JSON.parse(response.body).data;
 };
+
+export const getOperationById = async (operationId) => {
+  const query = `SELECT * FROM operations where id=${operationId}`;
+  const response = await invokeDB(query);
+  return JSON.parse(response.body).data;
+};
+
+export const getUserBalance = async (userId) => {
+  const query = `SELECT user_balance FROM records WHERE user_id="${userId}" AND deleted_at IS NULL ORDER BY date DESC LIMIT 1`;
+  const response = await invokeDB(query);
+  return JSON.parse(response.body).data;
+};
+
+export const insertRecord = async (record) => {
+  const {
+    id,
+    operationId,
+    userId,
+    userBalance,
+    operationResult,
+    date,
+    amount,
+  } = record;
+  const query = `INSERT INTO records (id, operation_id, user_id, user_balance, operation_result, date, amount) VALUES ("${id}", ${operationId}, "${userId}", ${userBalance}, "${operationResult}", "${date}", "${amount}")`;
+  const response = await invokeDB(query);
+  return JSON.parse(response.body).data;
+};
+
+export const insertNewUserInitialRecord = async (userId, initialCredits) => {
+  const query = `INSERT INTO records (id, user_id, user_balance, date) SELECT UUID(), "${userId}", ${initialCredits}, CURTIME() FROM dual WHERE NOT EXISTS (SELECT id FROM records WHERE user_id="${userId}")`;
+  const response = await invokeDB(query);
+  return JSON.parse(response.body).data;
+};
+
+export const performOperation = async (
+  firstValue,
+  secondValue,
+  operationType,
+) => {
+  function formatResult(compute) {
+    return compute().toFixed(2).toString();
+  }
+  switch (operationType) {
+    case "addition":
+      return formatResult(() => firstValue + secondValue);
+    case "subtraction":
+      return formatResult(() => firstValue - secondValue);
+    case "multiplication":
+      return formatResult(() => firstValue * secondValue);
+    case "division":
+      return formatResult(() => firstValue / secondValue);
+    case "square_root":
+      return formatResult(() => Math.sqrt(firstValue));
+    case "random_string":
+      try {
+        const stringGeneratorReq = {
+          jsonrpc: "2.0",
+          method: "generateStrings",
+          params: {
+            apiKey: process.env.STRING_GENERATOR_API_KEY,
+            n: 1,
+            length: 10,
+            characters: "abcdefghijklmnopqrstuvwxyz",
+            replacement: true,
+          },
+          id: 112233,
+        };
+        const response = await axios.post(
+          process.env.STRING_GENERATOR_URL,
+          stringGeneratorReq,
+        );
+        return response.data.result.random.data.pop();
+      } catch (err) {
+        throw err;
+      }
+    default:
+      return 0;
+  }
+};
+
+export function formatDateToMySQLDateTime(date) {
+  return date.toISOString().slice(0, 19).replace("T", " ");
+}
