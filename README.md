@@ -1,6 +1,6 @@
 # calculator_api
 
-This project contains source code and supporting files for a serverless application that you can deploy with the SAM CLI. It includes the following files and folders.
+This project contains source code and supporting files for the API for the TrueNorth's arithmetic project exercise. It includes the following files and folders.
 
 - records - Code for the /records endpoint Lambda function handlers.
 - auth-authorizer - Code for the custom authorizer lambda for the API Gateway.
@@ -18,9 +18,3 @@ calculator_api$ cd records
 hello-world$ npm install
 hello-world$ npm run test
 ```
-
-## Resources
-
-See the [AWS SAM developer guide](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html) for an introduction to SAM specification, the SAM CLI, and serverless application concepts.
-
-Next, you can use AWS Serverless Application Repository to deploy ready to use Apps that go beyond hello world samples and learn how authors developed their applications: [AWS Serverless Application Repository main page](https://aws.amazon.com/serverless/serverlessrepo/)
