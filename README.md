@@ -2,6 +2,8 @@
 
 This project contains source code and supporting files for the API for the TrueNorth's arithmetic project exercise. It includes the following files and folders.
 
+![Lambdas architecture diagram](./calculator-architecture.png)
+
 - records - Code for the /records endpoint Lambda function handlers.
 - auth-authorizer - Code for the custom authorizer lambda for the API Gateway.
 - db-proxy - Code for the lambda to interact with an RDS Proxy service in the VPC.
