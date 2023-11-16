@@ -2,16 +2,43 @@ import axios from "axios";
 import AWS from "aws-sdk";
 
 const egressLambda = await new AWS.Lambda();
+const dynamoDBClient = new AWS.DynamoDB.DocumentClient({ region: "us-east-1" });
 
 export async function getUserIdFromAuth0(authorizationToken) {
-  const userInfo = await axios.get(`${process.env.TOKEN_ISSUER}userinfo`, {
-    headers: {
-      Authorization: authorizationToken,
-      Accept: "application/json",
+  const tableName = "UserInfoCache";
+  const itemKey = authorizationToken.split(" ")[1];
+  const dynamoDBRequest = {
+    TableName: tableName,
+    Key: {
+      authorizationToken: itemKey,
     },
-  });
+  };
 
-  return userInfo.data.sub;
+  const cachedUser = await dynamoDBClient.get(dynamoDBRequest).promise();
+  if (Object.keys(cachedUser).length === 0) {
+    const userInfo = await axios.get(`${process.env.TOKEN_ISSUER}userinfo`, {
+      headers: {
+        Authorization: authorizationToken,
+        Accept: "application/json",
+      },
+    });
+
+    const userId = userInfo.data.sub;
+
+    await dynamoDBClient
+      .put({
+        TableName: tableName,
+        Item: {
+          authorizationToken: itemKey,
+          userId: userId,
+        },
+      })
+      .promise();
+
+    return userId;
+  }
+
+  return cachedUser.Item.userId;
 }
 
 export async function invokeDB(query) {

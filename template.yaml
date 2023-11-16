@@ -2,10 +2,6 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
   calculator_api
-
-  Sample SAM Template for calculator_api
-
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
     Timeout: 6
@@ -41,6 +37,10 @@ Parameters:
   StringGeneratorUrl:
     Description: Random.org API URL
     Type: String
+  InitialCredits:
+    Description: Default number for the initial user balance for new accounts
+    Type: String
+    Default: '300'
 Resources:
   AppApi:
     Type: AWS::Serverless::Api
@@ -57,35 +57,6 @@ Resources:
             FunctionInvokeRole: !GetAtt AuthAuthorizerRole.Arn
             FunctionPayloadType: TOKEN
         InvokeRole: NONE
-  OperationsFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: operations/
-      Handler: app.lambdaHandler
-      Runtime: nodejs18.x
-      Architectures:
-        - arm64
-      Environment:
-        Variables:
-          DB_HOST: !Ref DBHost
-          DB_USER: !Ref DBUser
-          DB_PASSWORD: !Ref DBPassword
-          DB_SCHEMA: !Ref DBSchema
-          TOKEN_ISSUER: !Ref TokenIssuer
-      VpcConfig:
-        SecurityGroupIds:
-          - sg-0cae655977afe517b
-        SubnetIds:
-          - subnet-0bdd5ab4ac70cf08d
-      Events:
-        Operations:
-          Type: Api
-          Properties:
-            Path: /v1/operations
-            Method: get
-            RestApiId: !Ref AppApi
-            Auth:
-              Authorizer: MyAuthAuthorizer
   DBProxyFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -178,6 +149,7 @@ Resources:
       Environment:
         Variables:
           TOKEN_ISSUER: !Ref TokenIssuer
+          INITIAL_CREDITS: !Ref InitialCredits
       Events:
         DeleteRecord:
           Type: Api
@@ -201,15 +173,6 @@ Resources:
       Architectures:
         - arm64
 Outputs:
-  OperationsApi:
-    Description: "API Gateway endpoint URL for Operations function"
-    Value: !Sub "https://${AppApi}.execute-api.${AWS::Region}.amazonaws.com/${APIStageName}/operations/"
-  OperationsFunction:
-    Description: "Operations Lambda Function ARN"
-    Value: !GetAtt OperationsFunction.Arn
-  OperationsFunctionIamRole:
-    Description: "Implicit IAM Role created for Operations function"
-    Value: !GetAtt OperationsFunctionRole.Arn
   CreateRecordsApi:
     Description: "API Gateway endpoint URL for CreateRecords function"
     Value: !Sub "https://${AppApi}.execute-api.${AWS::Region}.amazonaws.com/${APIStageName}/records/"
