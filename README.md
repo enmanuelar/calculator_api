@@ -11,6 +11,11 @@ This project contains source code and supporting files for the API for the TrueN
 - records/tests - Unit tests for the records code. 
 - template.yaml - A template that defines the application's AWS resources.
 
+## Prerequisites
+- node 18 or greater
+- SAM (https://aws.amazon.com/serverless/sam/)
+- docker
+
 ## Building and running the project
 This project is using SAM, to build it run:
 ```bash
